@@ -191,6 +191,25 @@ On your remote computer you want to send MQTT messages. This can be done by usin
 
 - Unplug the ethernet cable and do the same thing agin. **This might fail depending on your router.** If DNS is not handled properly, you would alternatively need to use the (changing) IP address to connect via Wi-Fi.
 
+## 3 Configure VNC Connection
+
+Sometimes we want VNC access for easier maintenance. You can skip that point if you don't need it and only work in ssh anyways.
+
+For VNC we do `dietpi-software` → search → type "vnc" → select tigerVNC with spacebar → Enter → install 
+
+We will then be prompted to install a desktop environment (LXDE) and a browser (Firefox). The installation will take some minutes, you will be asked if you want to set up auto-login – select "yes" and set up auto-login with Desktop for user dietpi.
+
+Now let's enable and start the service:
+
+````sh
+sudo systemctl enable vncserver
+sudo systemctl start vncserver
+````
+
+Then connect with [RealVNC Viewer](https://www.realvnc.com/en/connect/download/viewer) or any other viewer to `mypi:local:1` or `10.3.3.1:1`. Note the `:1` which is the second screen, as Tiger VNC can not share the default HDMI screen (`:0`) if there is one.
+
+You will be informed that there is no encryption (that is ok, we are local) and you have to enter a password ("123456").
+
 
 
 
