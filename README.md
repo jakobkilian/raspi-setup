@@ -1,4 +1,4 @@
-# Setting Up a DietPi with Mixed Eth and Wi-Fi Access
+# Setting up a DietPi with Mixed Eth and Wi-Fi Access
 
 ## Considerations
 
@@ -31,7 +31,7 @@ After flashing is completed reinsert the SD card in to computer again **before**
   - Tip: If you get a "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! " doing this, it means you had logged in to another device on the **same** IP/hostname. Do `nano ~/.ssh/known_hosts` and delete the line with the corresponding IP address from the list using `Ctrl + K`,  save `Ctrl + O`, leave `Ctrl + X` and try again.
 
 - At first login a auto setup will run and you will be asked:
-  - To change password for root, dietpi and software installation. For this tutorial we choose "123456", set a secure one in your installation!
+  - To change password for root, dietpi and software installation. For this tutorial we choose "123456", set a secure one with at least 6 characters (VNC) in your installation! 
   - If you want to disable UART? → Yes
   - Navigate down to "install" → Enter → Enter to run the basic installation
   - You will be asked about sending anonymous usage data → your choice
@@ -41,11 +41,11 @@ After flashing is completed reinsert the SD card in to computer again **before**
 
 We want the raspy to act as router and DHCP server to allow direct ethernet connections (and bridging any Wi-Fi into it).
 
-### 1a Update
+### 1 a) Update
 
 Not needed, is done at first boot
 
-### 1b Install Packages
+### 1 b) Install Packages
 
 Let's install:
 
@@ -56,7 +56,7 @@ Let's install:
 sudo apt install dnsmasq avahi-daemon mosquitto mosquitto-clients -y
 ```
 
-### 1c Enable Services
+### 1 c) Enable Services
 
 ```sh
 sudo systemctl enable avahi-daemon
@@ -66,7 +66,7 @@ sudo systemctl enable dnsmasq
 
 "enable" will start them at the next boot up, "start" would do it right away. I prefer to do a clean reboot after setting everything, so no start needed here.
 
-### 1d Config Network Settings
+### 1 d) Config Network Settings
 
 ```sh
 sudo nano /etc/dnsmasq.conf
@@ -85,7 +85,7 @@ dhcp-option=28,10.3.3.255
 
 Save with `Ctrl + O` and leave with `Ctrl + X` 
 
-### 1e Set Static IP for Raspi
+### 1 e) Set Static IP for Raspi
 
 ````sh
 sudo nano /etc/network/interfaces
@@ -103,7 +103,7 @@ iface eth0 inet static
 
 This sets a static IP for the raspi at 10.3.3.1 and doesn't wait for external DHCP servers
 
-### 1f Set Hostname
+### 1 f) Set Hostname
 
 Setting hostname is easiest in the config menu of dietpi
 
@@ -112,16 +112,33 @@ dietpi-config
 ```
 
 - In the config go to: Security → Hostname → Set to `mypi` (or whatever you want)
-- Here you could also change your password!
+- Note that here you could also change your password!
 - Exit config
 
-### 1g Reboot
+### 1 g) Ensure Avahi Start After Sth is Up
+
+There can be problems, if avahi-daemon starts before the network is fully up (with the static ip assigned). This is why we wait with it until network is online:
 
 ````sh
-sudo reboot now
+sudo mkdir -p /etc/systemd/system/avahi-daemon.service.d
+sudo nano /etc/systemd/system/avahi-daemon.service.d/override.conf
 ````
 
-### 1h Test Setup
+and then add this to the new file:
+
+````sh
+[Unit]
+After=network-online.target
+Wants=network-online.target
+````
+
+### 1 h) Reboot
+
+````sh
+sudo reboot
+````
+
+### 1 i) Test Setup
 
 Now ethernet should be working. Connect the cable to your computer and ssh to the Raspi by doing: `ssh dietpi@10.3.3.1`. 
 
@@ -129,7 +146,7 @@ Then exit, disable Wi-Fi on your computer and try again with:  `ssh dietpi@mypi.
 
 If you have problems, connect the "old" way via Wi-Fi and do `ip addr show eth0 ` to check if sth is up and static IP is set...
 
-# TODO: woking?
+# TODO: working?
 
 ##  2 Configure & Test MQTT
 
