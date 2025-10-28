@@ -28,7 +28,7 @@ After flashing is completed reinsert the SD card in to computer again **before**
 - Put SD in Raspi and power up
 - Find Raspi's IP e.g. [with this tutorial](https://raspberrytips.com/find-current-ip-raspberry-pi/). 
 - Connect to the Raspi by calling `ssh root@192.168.0.XX` in the macOS terminal and using the default password `dietpi`
-  - Tip: If you get a "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! " doing this, it means you had logged in to another device on the **same** IP/hostname. Do `nano ~/.ssh/known_hosts` and delete the line with the corresponding IP address from the list using `Ctrl + K`,  save `Ctrl + O`, leave `Ctrl + X` and try again.
+  - Tip: If you get a "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! " doing this, it means you had logged in to another device on the **same** IP/hostname. Do `ssh-keygen -R HOST` and replace HOST with IP or hostname to delete old keys.
 
 - At first login a auto setup will run and you will be asked:
   - To change password for root, dietpi and software installation. For this tutorial we choose "123456", set a secure one with at least 6 characters (VNC) in your installation! 
@@ -140,17 +140,19 @@ sudo reboot
 
 ### 1 i) Test Setup
 
-Now ethernet should be working. Connect the cable to your computer and ssh to the Raspi by doing: `ssh dietpi@10.3.3.1`. 
+Now ethernet should be working. Check by doing: `ping 10.3.3.1`. 
 
-Then exit, disable Wi-Fi on your computer and try again with:  `ssh dietpi@mypi.local`. This *could* also work via Wi-Fi but often fails because the router doesn't handle the hostname via DNS. It should work however with our ethernet, as we set the Raspi to provide a DNS server...
+Then exit, **disable Wi-Fi on your computer** and try again with: `ping mypi.local`. 
 
-If you have problems, connect the "old" way via Wi-Fi and do `ip addr show eth0 ` to check if sth is up and static IP is set...
+Second *could* also work via Wi-Fi but to my experience often fails because the router doesn't correctly handle the hostname via DNS. It has to work however with our direct ethernet connection to the Raspi, as we set it up to provide a DNS server itself.
 
-# TODO: working?
+You can now login with  `ssh dietpi@mypi.local`
+
+If you have problems, connect the "old" way via Wi-Fi and do `ip addr show eth0 ` to check if sth is up and static IP is set. I can not really give you advice at that point, as I can't imagine what could go wrong.
 
 ##  2 Configure & Test MQTT
 
-Let's set up mosquitto and send a test message:
+Let's now set up mosquitto and send a test message:
 
 ```sh
 sudo nano /etc/mosquitto/conf.d/remote.conf
@@ -169,7 +171,7 @@ then restart the mosquito service with
 sudo systemctl restart mosquitto
 ````
 
-### test MQTT sending
+### Test MQTT Receiving
 
 On Raspberry Pi:
 
@@ -188,10 +190,6 @@ On your remote computer you want to send MQTT messages. This can be done by usin
 ### test via Wi-Fi
 
 - Unplug the ethernet cable and do the same thing agin. **This might fail depending on your router.** If DNS is not handled properly, you would alternatively need to use the (changing) IP address to connect via Wi-Fi.
-
-
-
-
 
 
 
