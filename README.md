@@ -149,7 +149,9 @@ Now ethernet should be working. Check by doing: `ping 10.3.3.1`.
 
 Then exit, **disable Wi-Fi on your computer** and try again with: `ping mypi.local`. 
 
-Second *could* also work via Wi-Fi but to my experience often fails because the router doesn't correctly handle the hostname via DNS. It has to work however with our direct ethernet connection to the Raspi, as we set it up to provide a DNS server itself.
+**Warning**: it can take some minutes (!) for a mDNS/Bonjour (.local) resolution to take place. So if it does not work for you, take a coffee and try later or simply stick with 10.3.3.1 for now...
+
+mypi.local *could* also work via Wi-Fi but to my experience often fails because the router doesn't correctly handle the hostname via DNS. It has to work however with our direct ethernet connection to the Raspi, as we set it up to provide a DNS server itself.
 
 You can now login with  `ssh dietpi@mypi.local`
 
@@ -166,7 +168,7 @@ Let's now set up mosquitto and send a test message:
   sudo mosquitto_passwd -c /etc/mosquitto/passwd <username>
   ```
   Enter a password when prompted.
-
+    
 2. Configure Mosquitto:
   ```sh
   sudo nano /etc/mosquitto/conf.d/remote.conf
