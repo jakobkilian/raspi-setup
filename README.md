@@ -173,14 +173,10 @@ Let's now set up mosquitto and send a test message:
   ```sh
   sudo nano /etc/mosquitto/conf.d/remote.conf
   ```
-Add these lines to the file. It creates two listeners: locally we can access on port 1884 without password, remotely on port 1883 but only with username and password.
+And add this. This only allows MQTT connections with user and passwords for everyone and on port 1883
 
   ```
-  # Local listener (anonymous allowed)
-  listener 1884 127.0.0.1
-  allow_anonymous true
-  
-  # Remote listener (password required)
+  # Mosquitto listener (password required)
   listener 1883 0.0.0.0
   allow_anonymous false
   password_file /etc/mosquitto/passwd
@@ -204,7 +200,7 @@ Add these lines to the file. It creates two listeners: locally we can access on 
 On Raspberry Pi:
 
 ```sh
-mosquitto_sub -h localhost -t test
+mosquitto_sub -h localhost -t test -u <username> -P <password>
 ```
 
 On your remote computer you want to send MQTT messages. This can be done by using a GUI software like [MQTTX](https://mqttx.app/) or by the command line ([mosquitto](https://mosquitto.org/download/))
