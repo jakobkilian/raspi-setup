@@ -207,6 +207,7 @@ On your remote computer you want to send MQTT messages. This can be done by usin
 
 - Turn off your Wi-Fi on your remote Computer (to make sure eth works)
 - Connect to the broker/server on your Raspi: `mqtt://mypi.local`
+- Use the MQTT <username> and <password> you just set.
 - Send a message with this content:
   - Topic: `test`
   - Payload: `Hello World!`
