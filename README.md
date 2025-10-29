@@ -31,7 +31,7 @@ After flashing is completed reinsert the SD card in to computer again **before**
   - Tip: If you get a "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! " doing this, it means you had logged in to another device on the **same** IP/hostname. Do `ssh-keygen -R HOST` and replace HOST with IP or hostname to delete old keys.
 
 - At first login a auto setup will run and you will be asked:
-  - To change password for root, dietpi and software installation. For this tutorial we choose "123456", set a secure one with at least 6 characters (VNC) in your installation! 
+  - To change password for root, dietpi and software installation. Choose a secure password here, as our raspi will be accessible via Wi-Fi and ethernet! In this tutorial we'll call it <secure_pwd>
   - If you want to disable UART? → Yes
   - Navigate down to "install" → Enter → Enter to run the basic installation
   - You will be asked about sending anonymous usage data → your choice
@@ -43,7 +43,11 @@ We want the raspy to act as router and DHCP server to allow direct ethernet conn
 
 ### 1 a) Update
 
-Not needed, is done at first boot
+It's good practice to run updates. If you followed this tutorial you can skip this, as dietpit updates at first boot.
+
+```sh
+sudo apt update && sudo apt upgrade -y
+```
 
 ### 1 b) Install Packages
 
@@ -93,6 +97,8 @@ sudo nano /etc/network/interfaces
 
 **replace** (delete line with Ctrl +K) the whole ethernet paragraph with:
 
+**Note:** `/etc/network/interfaces` is deprecated on some newer Raspberry Pi OS versions. DietPi supports it, but if you run into issues, check if your system uses `dhcpcd.conf` or another network manager.
+
 ```sh
 allow-hotplug eth0
 iface eth0 inet static
@@ -110,10 +116,9 @@ Setting hostname is easiest in the config menu of dietpi
 ```sh
 dietpi-config
 ```
-
-- In the config go to: Security → Hostname → Set to `mypi` (or whatever you want)
-- Note that here you could also change your password!
-- Exit config
+  - Go to: Security → Hostname → Set to `mypi` (or whatever you want)
+  - You can also change your password here
+  - Exit config
 
 ### 1 g) Ensure Avahi Start After Sth is Up
 
@@ -154,22 +159,43 @@ If you have problems, connect the "old" way via Wi-Fi and do `ip addr show eth0 
 
 Let's now set up mosquitto and send a test message:
 
-```sh
-sudo nano /etc/mosquitto/conf.d/remote.conf
-```
+### Set up Mosquitto with password authentication
 
-Add:
+1. Create a password file and add a user (replace `<username>`):
+  ```sh
+  sudo mosquitto_passwd -c /etc/mosquitto/passwd <username>
+  ```
+  Enter a password when prompted.
 
-```
-listener 1883 0.0.0.0
-allow_anonymous true
-```
+2. Configure Mosquitto:
+  ```sh
+  sudo nano /etc/mosquitto/conf.d/remote.conf
+  ```
+Add these lines to the file. It creates two listeners: locally we can access on port 1884 without password, remotely on port 1883 but only with username and password.
 
-then restart the mosquito service with
+  ```
+  # Local listener (anonymous allowed)
+  listener 1884 127.0.0.1
+  allow_anonymous true
+  
+  # Remote listener (password required)
+  listener 1883 0.0.0.0
+  allow_anonymous false
+  password_file /etc/mosquitto/passwd
+  ```
 
-````sh
-sudo systemctl restart mosquitto
-````
+3. Set correct permissions:
+
+  ```sh
+  sudo chown mosquitto:mosquitto /etc/mosquitto/passwd
+  sudo chmod 640 /etc/mosquitto/passwd
+  ```
+
+4. Restart Mosquitto:
+
+  ```sh
+  sudo systemctl restart mosquitto
+  ```
 
 ### Test MQTT Receiving
 
@@ -208,7 +234,7 @@ sudo systemctl start vncserver
 
 Then connect with [RealVNC Viewer](https://www.realvnc.com/en/connect/download/viewer) or any other viewer to `mypi:local:1` or `10.3.3.1:1`. Note the `:1` which is the second screen, as Tiger VNC can not share the default HDMI screen (`:0`) if there is one.
 
-You will be informed that there is no encryption (that is ok, we are local) and you have to enter a password ("123456").
+You will be informed that there is no encryption (that is ok, we are local) and you have to enter your <secure_pwd>.
 
 
 
